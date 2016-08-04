@@ -58,7 +58,7 @@ public class FileOperator {
 			}
 			FileWriter fWriter = null;
 			try {
-				fWriter = new FileWriter(getFileNameByCalendar(calendar), true);
+				fWriter = new FileWriter(fileDir + "/" + getFileNameByCalendar(calendar), true);
 				fWriter.write(sb.toString());
 				fWriter.flush();
 				fWriter.close();
@@ -94,27 +94,57 @@ public class FileOperator {
 		return sb.toString();
 	}
 
+	/**
+	 * 删除给定日期的七天(含)前的及以后的log
+	 * @param todayCalendar 所以日期
+	 */
+	private void deleteOldFile(Calendar todayCalendar) {
+		File[] files = fileDir.listFiles();
+		if (files != null && files.length > 0) {
+			for (File file : files) {
+				Calendar oldCalendar = (Calendar) todayCalendar.clone();
+				oldCalendar.set(Calendar.DAY_OF_MONTH, oldCalendar.get(Calendar.DAY_OF_MONTH) - 1);
+				if (file.isFile() && file.exists() && !file.getName().equals(getFileNameByCalendar(todayCalendar))
+						&& !file.getName().equals(getFileNameByCalendar(getCalendarByCorrection(todayCalendar, -1)))
+						&& !file.getName().equals(getFileNameByCalendar(getCalendarByCorrection(todayCalendar, -2)))
+						&& !file.getName().equals(getFileNameByCalendar(getCalendarByCorrection(todayCalendar, -3)))
+						&& !file.getName().equals(getFileNameByCalendar(getCalendarByCorrection(todayCalendar, -4)))
+						&& !file.getName().equals(getFileNameByCalendar(getCalendarByCorrection(todayCalendar, -5)))
+						&& !file.getName().equals(getFileNameByCalendar(getCalendarByCorrection(todayCalendar, -6)))) {
+					try {
+						file.delete();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * 获取所给日期的修正后的日期
+	 * @param calendar 原始日期
+	 * @param correctionDay 修正值,单位为天
+	 * @return 修正后的日期
+	 */
+	private Calendar getCalendarByCorrection(Calendar calendar, int correctionDay) {
+		Calendar oldCalendar = (Calendar) calendar.clone();
+		oldCalendar.set(Calendar.DAY_OF_MONTH, oldCalendar.get(Calendar.DAY_OF_MONTH) + correctionDay);
+		return oldCalendar;
+	}
+
+	/**
+	 * 根据日期获取文件名
+	 * @param calendar 日期
+	 * @return 文件名
+	 */
 	private String getFileNameByCalendar(Calendar calendar) {
 		if (calendar == null) {
 			return null;
 		}
 		Date date = new Date(calendar.getTimeInMillis());
 		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		String fileName = fileDir + "/y_log" + "_" + formatter.format(date) + ".log";
+		String fileName = "y_log" + "_" + formatter.format(date) + ".txt";
 		return fileName;
-	}
-	
-	private void deleteOldFile(Calendar todayCalendar) {
-		Calendar oldCalendar = (Calendar) todayCalendar.clone();
-		oldCalendar.set(Calendar.DAY_OF_MONTH, oldCalendar.get(Calendar.DAY_OF_MONTH) - 7);
-		String oldFilePath = getFileNameByCalendar(oldCalendar);
-		try {
-			File file = new File(oldFilePath);
-			if (file.isFile() && file.exists()) {
-			    file.delete();  
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 }
