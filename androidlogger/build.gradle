@@ -87,7 +87,7 @@ bintray {
     pkg {
         //这个应该是传到maven的仓库的
         repo = "maven"
-        name = "logger"//发布的项目名字小写
+        name = "androidlogger"//发布的项目名字小写
         websiteUrl = siteUrl//
         vcsUrl = gitUrl//
         licenses = ["Apache-2.0"]
